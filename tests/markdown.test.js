@@ -47,6 +47,17 @@ describe('Markdown Conversion', () => {
       assert.strictEqual(styleReq.updateTextStyle.textStyle.bold, true);
       assert.strictEqual(styleReq.updateTextStyle.textStyle.italic, true);
     });
+
+    it('should style inline code as monospace', () => {
+      const markdown = 'Use `inline_code` here';
+      const requests = convertMarkdownToRequests(markdown, 1);
+
+      const styleReqs = requests.filter(r => r.updateTextStyle);
+      const codeStyleReq = styleReqs.find(
+        r => r.updateTextStyle.textStyle.weightedFontFamily?.fontFamily === 'Roboto Mono'
+      );
+      assert.ok(codeStyleReq, 'Should style inline code with monospace font');
+    });
   });
 
   describe('Links', () => {
@@ -113,6 +124,68 @@ describe('Markdown Conversion', () => {
       const bulletReqs = requests.filter(r => r.createParagraphBullets);
       assert.strictEqual(bulletReqs.length, 3, 'Should have 3 numbered list requests');
       assert.strictEqual(bulletReqs[0].createParagraphBullets.bulletPreset, 'NUMBERED_DECIMAL_ALPHA_ROMAN');
+    });
+
+    it('should preserve nested list levels with leading tabs', () => {
+      const markdown = '- Parent\n  - Child';
+      const requests = convertMarkdownToRequests(markdown, 1);
+
+      const insertReqs = requests.filter(r => r.insertText);
+      assert.ok(insertReqs.some(r => r.insertText.text.includes('Parent')), 'Should include parent text');
+      assert.ok(insertReqs.some(r => r.insertText.text === '\t'), 'Should insert tab for nested list indentation');
+      assert.ok(insertReqs.some(r => r.insertText.text.includes('Child')), 'Should include child text');
+    });
+
+    it('should convert markdown task lists to checkbox bullets', () => {
+      const markdown = '- [x] done\n- [ ] todo';
+      const requests = convertMarkdownToRequests(markdown, 1);
+
+      const bulletReqs = requests.filter(r => r.createParagraphBullets);
+      assert.strictEqual(bulletReqs.length, 2, 'Should have two list bullet requests');
+      assert.strictEqual(bulletReqs[0].createParagraphBullets.bulletPreset, 'BULLET_CHECKBOX');
+      assert.strictEqual(bulletReqs[1].createParagraphBullets.bulletPreset, 'BULLET_CHECKBOX');
+
+      const allInsertedText = requests
+        .filter(r => r.insertText)
+        .map(r => r.insertText.text)
+        .join('');
+      assert.ok(!allInsertedText.includes('[x]'), 'Should strip [x] task prefix from text');
+      assert.ok(!allInsertedText.includes('[ ]'), 'Should strip [ ] task prefix from text');
+    });
+
+    it('should not let list bullet ranges bleed into following headings', () => {
+      const markdown = '- Parent\n  1. Child\n\n## Next Heading';
+      const requests = convertMarkdownToRequests(markdown, 1);
+
+      const headingReq = requests.find(
+        r => r.updateParagraphStyle?.paragraphStyle?.namedStyleType === 'HEADING_2'
+      );
+      assert.ok(headingReq, 'Should have H2 paragraph style request');
+      const headingStart = headingReq.updateParagraphStyle.range.startIndex;
+
+      const bulletReqs = requests.filter(r => r.createParagraphBullets);
+      const overlappingBullet = bulletReqs.find((r) => {
+        const { startIndex, endIndex } = r.createParagraphBullets.range;
+        return headingStart >= startIndex && headingStart < endIndex;
+      });
+      assert.ok(!overlappingBullet, 'No list bullet request should cover heading start index');
+    });
+  });
+
+  describe('Code Blocks', () => {
+    it('should convert fenced code blocks and style them as code', () => {
+      const markdown = '```js\nconst x = 1;\nconsole.log(x);\n```';
+      const requests = convertMarkdownToRequests(markdown, 1);
+
+      const insertReqs = requests.filter(r => r.insertText);
+      assert.ok(insertReqs.some(r => r.insertText.text.includes('const x = 1;')), 'Should insert first code line');
+      assert.ok(insertReqs.some(r => r.insertText.text.includes('console.log(x);')), 'Should insert second code line');
+
+      const styleReqs = requests.filter(r => r.updateTextStyle);
+      const monospaceReqs = styleReqs.filter(
+        r => r.updateTextStyle.textStyle.weightedFontFamily?.fontFamily === 'Roboto Mono'
+      );
+      assert.ok(monospaceReqs.length >= 2, 'Should apply monospace style to code block lines');
     });
   });
 
