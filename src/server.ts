@@ -24,6 +24,11 @@ import * as GDocsHelpers from './googleDocsApiHelpers.js';
 import * as SheetsHelpers from './googleSheetsApiHelpers.js';
 import { convertMarkdownToRequests } from './markdownToGoogleDocs.js';
 
+// MCP stdio transport uses stdout for protocol frames. Route accidental logs to stderr.
+console.log = (...args: unknown[]) => {
+  console.error(...args);
+};
+
 let authClient: OAuth2Client | null = null;
 let googleDocs: docs_v1.Docs | null = null;
 let googleDrive: drive_v3.Drive | null = null;
