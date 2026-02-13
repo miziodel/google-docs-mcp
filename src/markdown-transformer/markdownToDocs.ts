@@ -865,4 +865,3 @@ function lastInsertEndsWithNewline(context: ConversionContext): boolean {
   const lastInsert = context.insertRequests[context.insertRequests.length - 1]?.insertText?.text;
   return Boolean(lastInsert && lastInsert.endsWith('\n'));
 }
-

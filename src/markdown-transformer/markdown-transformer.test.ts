@@ -413,7 +413,8 @@ describe('Markdown to Docs Conversion', () => {
 
       const insertTableIndex = tableReq!.insertTable!.location!.index!;
       const tableStartLocationIndex =
-        cellStyleReq!.updateTableCellStyle!.tableRange!.tableCellLocation!.tableStartLocation!.index!;
+        cellStyleReq!.updateTableCellStyle!.tableRange!.tableCellLocation!.tableStartLocation!
+          .index!;
 
       // The actual table start is insertTable target + 1 (preceding newline shifts it)
       expect(tableStartLocationIndex).toBe(insertTableIndex + 1);
@@ -423,9 +424,7 @@ describe('Markdown to Docs Conversion', () => {
       const requests = convertMarkdownToRequests('```\nhello\n```', 1);
 
       const tableReq = requests.find((r) => r.insertTable);
-      const codeInsertReq = requests.find(
-        (r) => r.insertText && r.insertText.text === 'hello'
-      );
+      const codeInsertReq = requests.find((r) => r.insertText && r.insertText.text === 'hello');
 
       expect(tableReq).toBeDefined();
       expect(codeInsertReq).toBeDefined();
@@ -441,9 +440,7 @@ describe('Markdown to Docs Conversion', () => {
       const requests = convertMarkdownToRequests('```\nline1\nline2\nline3\n```', 1);
 
       const insertReqs = requests.filter((r) => r.insertText);
-      const codeContent = insertReqs.find(
-        (r) => r.insertText!.text === 'line1\nline2\nline3'
-      );
+      const codeContent = insertReqs.find((r) => r.insertText!.text === 'line1\nline2\nline3');
       expect(codeContent).toBeDefined();
     });
 
@@ -454,9 +451,7 @@ describe('Markdown to Docs Conversion', () => {
       expect(tableReqs).toHaveLength(1);
 
       // No code text insertion (empty block)
-      const codeInsertReqs = requests.filter(
-        (r) => r.insertText && r.insertText.text !== '\n'
-      );
+      const codeInsertReqs = requests.filter((r) => r.insertText && r.insertText.text !== '\n');
       expect(codeInsertReqs).toHaveLength(0);
     });
 
@@ -477,9 +472,7 @@ describe('Markdown to Docs Conversion', () => {
       const tableReq = requests.find((r) => r.insertTable);
       expect(tableReq!.insertTable!.location!.tabId).toBe('tab-code');
 
-      const codeInsertReq = requests.find(
-        (r) => r.insertText && r.insertText.text === 'code'
-      );
+      const codeInsertReq = requests.find((r) => r.insertText && r.insertText.text === 'code');
       expect(codeInsertReq!.insertText!.location!.tabId).toBe('tab-code');
 
       const cellStyleReq = requests.find((r) => r.updateTableCellStyle);
