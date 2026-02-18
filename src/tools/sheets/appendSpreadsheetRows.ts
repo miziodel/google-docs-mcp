@@ -21,7 +21,7 @@ export function register(server: FastMCP) {
           'A1 notation range indicating where to append (e.g., "A1" or "Sheet1!A1"). Data will be appended starting from this range.'
         ),
       values: z
-        .array(z.array(z.any()))
+        .array(z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])))
         .describe('2D array of values to append. Each inner array represents a row.'),
       valueInputOption: z
         .enum(['RAW', 'USER_ENTERED'])

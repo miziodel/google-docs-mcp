@@ -19,7 +19,7 @@ export function register(server: FastMCP) {
           'ID of folder where spreadsheet should be created. If not provided, creates in Drive root.'
         ),
       initialData: z
-        .array(z.array(z.any()))
+        .array(z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])))
         .optional()
         .describe(
           'Optional initial data to populate in the first sheet. Each inner array represents a row.'

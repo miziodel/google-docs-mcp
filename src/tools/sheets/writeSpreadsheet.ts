@@ -19,7 +19,7 @@ export function register(server: FastMCP) {
         .string()
         .describe('A1 notation range to write to (e.g., "A1:B2" or "Sheet1!A1:B2").'),
       values: z
-        .array(z.array(z.any()))
+        .array(z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])))
         .describe('2D array of values to write. Each inner array represents a row.'),
       valueInputOption: z
         .enum(['RAW', 'USER_ENTERED'])

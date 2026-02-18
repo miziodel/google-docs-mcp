@@ -9,5 +9,19 @@ token.json
 # Log files
 *.log
 
-# Environment variables (if you use a .env file later)
-.env* 
+# Environment variables
+.env*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Diagnostic/Output files
+repomix-output.txt.xml
+.repomix/
